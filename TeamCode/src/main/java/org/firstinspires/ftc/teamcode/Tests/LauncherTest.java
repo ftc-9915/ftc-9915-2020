@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Tests;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name="Launcher Test", group="test")
@@ -23,7 +24,7 @@ public class LauncherTest extends OpMode {
 
         // Initialization values
         power = 0.0;
-        increment = 0.005;
+        increment = 0.01;
         buttonReleased = true;
     }
 
@@ -40,8 +41,8 @@ public class LauncherTest extends OpMode {
         telemetry.addData("Add Increment to Motor Power", "D-pad up");
         telemetry.addData("Subtract Increment to Motor Power", "D-pad down");
         telemetry.addLine("- Power Increment -");
-        telemetry.addData("Increase Increment by 0.001", "Right Bumper");
-        telemetry.addData("Decrease Increment by 0.001", "Left Bumper");
+        telemetry.addData("Increase Increment by 0.01", "Right Bumper");
+        telemetry.addData("Decrease Increment by 0.01", "Left Bumper");
 
         // Run at full power or stop
         if(gamepad1.a) {
@@ -64,11 +65,11 @@ public class LauncherTest extends OpMode {
         // Adjusting increment value
         // (this does not affect the motor power until the increment is applied to the motor power)
         if(gamepad1.right_bumper && buttonReleased) {
-            increment += 0.001;
+            increment += 0.01;
             buttonReleased = false;
         }
         if(gamepad1.left_bumper && buttonReleased) {
-            increment = Math.max(increment - 0.001, 0.0);
+            increment = Math.max(increment - 0.01, 0.0);
             buttonReleased = false;
         }
 
