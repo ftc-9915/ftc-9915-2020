@@ -41,8 +41,8 @@ public class LauncherTest extends OpMode {
         telemetry.addData("Add Increment to Motor Power", "D-pad up");
         telemetry.addData("Subtract Increment to Motor Power", "D-pad down");
         telemetry.addLine("- Power Increment -");
-        telemetry.addData("Increase Increment by 0.001", "Right Bumper");
-        telemetry.addData("Decrease Increment by 0.001", "Left Bumper");
+        telemetry.addData("Increase Increment by 0.01", "Right Bumper");
+        telemetry.addData("Decrease Increment by 0.01", "Left Bumper");
 
         // Run at full power or stop
         if(gamepad1.a) {
