@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
 
 @Autonomous(name = "AutonomousFramework", group = "test")
 public class AutonomousFramework extends LinearOpMode {
@@ -10,9 +12,19 @@ public class AutonomousFramework extends LinearOpMode {
     int state = 1;
     boolean A = false;
     boolean B = false;
+    OpenCvCamera webcam;
+
+
 
     @Override
     public void runOpMode() throws InterruptedException {
+        //Initialize webcam stream
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+
+        //Send webcam stream to vision pipline for processing and telemetry for reporting
+        VisionPipeline pipeline = new VisionPipeline(webcam, telemetry);
+
         while (opModeIsActive()) {
             switch (state) {
                 case 1: // Grab wobble goal
