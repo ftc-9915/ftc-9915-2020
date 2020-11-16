@@ -16,6 +16,8 @@ public class LauncherTest extends OpMode {
     // Ensures that the adjustments are made each time the gamepad buttons are pressed rather than each time through loop
     boolean buttonReleased;
 
+    int direction = 1;
+
     @Override
     public void init() {
         launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
@@ -26,6 +28,7 @@ public class LauncherTest extends OpMode {
         power = 0.0;
         increment = 0.01;
         buttonReleased = true;
+        direction = 1;
     }
 
     @Override
@@ -33,8 +36,10 @@ public class LauncherTest extends OpMode {
         // Controls and Information
         telemetry.addData("Motor Power", power);
         telemetry.addData("Power Adjustment Increment", increment);
+        telemetry.addData("Motor Direction", direction);
         telemetry.addLine();
         telemetry.addLine("--- Controls ---");
+        telemetry.addData("Reverse Motor Direction", "D-pad left");
         telemetry.addLine(" - Motor Power -");
         telemetry.addData("Set Motor Power to Full Power (1.0)", "button A");
         telemetry.addData("Stop Motor (power 0.0)", "button B");
@@ -43,6 +48,11 @@ public class LauncherTest extends OpMode {
         telemetry.addLine("- Power Increment -");
         telemetry.addData("Increase Increment by 0.01", "Right Bumper");
         telemetry.addData("Decrease Increment by 0.01", "Left Bumper");
+
+        // Reverse motor direction (each time the button is pressed)
+        if(gamepad1.dpad_left && buttonReleased) {
+            direction *= -1;
+        }
 
         // Run at full power or stop
         if(gamepad1.a) {
@@ -75,11 +85,11 @@ public class LauncherTest extends OpMode {
 
         // Do not adjust values again until after buttons are released (and pressed again) so the
         // adjustments are made each time the gamepad buttons are pressed rather than each time through loop
-        if(!gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.left_bumper && !gamepad1.right_bumper) {
+        if(!gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_left) {
             buttonReleased = true;
         }
 
-        launcherMotor.setPower(power);
+        launcherMotor.setPower(power * direction);
 
     }
 }
