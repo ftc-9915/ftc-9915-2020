@@ -25,8 +25,6 @@ public class AutonomousFramework extends LinearOpMode {
         VisionPipeline pipeline = new VisionPipeline();
         webcam.setPipeline(pipeline);
 
-        webcam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
-
         //opens connection to camera asynchronously
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {

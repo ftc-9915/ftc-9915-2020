@@ -13,14 +13,14 @@ public class VisionPipeline extends OpenCvPipeline {
 
     public boolean viewportPaused = false;
 
-    //ringAnalysisZone location
-    public static final Point ZONE_CENTER = new Point(181, 98);
-    public static final int ZONE_WIDTH = 35;
-    public static final int ZONE_HEIGHT = 25;
+    //ringAnalysisZone location, b2 (60, 140)
+    public static final Point ZONE_CENTER = new Point(53, 120);
+    public static final int ZONE_WIDTH = 45;
+    public static final int ZONE_HEIGHT = 50;
 
     //Cb Threshhold Values
-    private static final int FOUR_RING_THRESHOLD = 150;
-    private static final int ONE_RING_THRESHOLD = 135;
+    private static final int FOUR_RING_THRESHOLD = 149;
+    private static final int ONE_RING_THRESHOLD = 128;
 
     //Viewfinder Colorspace
     public ViewfinderType[] COLOR_SPACES = new ViewfinderType[] {ViewfinderType.RGB, ViewfinderType.YcrCb, ViewfinderType.Cb};
