@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Autonomous(name = "AutonomousFramework", group = "test")
 public class AutonomousFramework extends LinearOpMode {
@@ -18,12 +19,28 @@ public class AutonomousFramework extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        //Initialize webcam stream
+        //Initialize webcam
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        VisionPipeline pipeline = new VisionPipeline();
+        webcam.setPipeline(pipeline);
 
-        //Send webcam stream to vision pipline for processing and telemetry for reporting
-        VisionPipeline pipeline = new VisionPipeline(webcam, telemetry);
+        webcam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
+
+        //opens connection to camera asynchronously
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
+            }
+        });
+
+        telemetry.addLine("Waiting for start");
+        telemetry.update();
+
+        waitForStart();
 
         while (opModeIsActive()) {
             switch (state) {
@@ -34,12 +51,6 @@ public class AutonomousFramework extends LinearOpMode {
                     break;
 
                 case 3: // Detect number of rings, determine A, B, C
-                    /*
-                    if 0 rings: A = true
-                    if 1 ring: B = true
-                    if 4 rings: nothing happens
-                    */
-                    break;
 
                 case 4: // Straighten robot
                     if (B) {
@@ -90,6 +101,17 @@ public class AutonomousFramework extends LinearOpMode {
                     break;
 
             }
+
+            telemetry.addData("Cb Value", pipeline.getAnalysis());
+            telemetry.addData("Ring Position", pipeline.position);
+            telemetry.addData("Frame Count", webcam.getFrameCount());
+            telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
+            telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
+            telemetry.addData("Pipeline time ms", webcam.getPipelineTimeMs());
+            telemetry.addData("Overhead time ms", webcam.getOverheadTimeMs());
+            telemetry.addData("Theoretical max FPS", webcam.getCurrentPipelineMaxFps());
+            telemetry.update();
+
         }
     }
 
