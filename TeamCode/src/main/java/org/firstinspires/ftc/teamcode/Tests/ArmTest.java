@@ -17,7 +17,7 @@ public class ArmTest extends OpMode {
     Servo clawServo;
 
     static final int ARM_INCREMENT = 3;
-    static final double CLAW_OPEN_POS = 0.6;
+    static final double CLAW_OPEN_POS = 0.7;
     static final double CLAW_CLOSE_POS = 0.15;
 
     int currentArmPosition = 0;
@@ -52,12 +52,9 @@ public class ArmTest extends OpMode {
     public void loop() {
         telemetry.addLine("Controls:");
         telemetry.addData("Open Claw","button A");
-        telemetry.addData("CLose Claw", "button B");
+        telemetry.addData("Close Claw", "button B");
         telemetry.addData("Arm", "right trigger (forward), left trigger (backward)");
-        telemetry.addData("Speed ", speed);
-        telemetry.addData("Right stick y ", gamepad1.right_stick_y);
-        telemetry.addData("Strafe ", strafe);
-        telemetry.addData("Rotation ", rotation);
+        telemetry.addData("Arm Position", currentArmPosition);
 
 
         // Claw
