@@ -1,9 +1,16 @@
 package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+
 
 @Autonomous(name = "AutonomousFramework", group = "test")
 public class AutonomousFramework extends LinearOpMode {
@@ -11,6 +18,9 @@ public class AutonomousFramework extends LinearOpMode {
     int state = 1;
     boolean A = false;
     boolean B = false;
+    OpenCvCamera webcam;
+
+
 
     DcMotor armMotor; // this stuff is going to be replaced by robot class later
 
@@ -27,6 +37,26 @@ public class AutonomousFramework extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+
+        //Initialize webcam
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        VisionPipeline pipeline = new VisionPipeline();
+        webcam.setPipeline(pipeline);
+
+        //opens connection to camera asynchronously
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
+            }
+        });
+
+        telemetry.addLine("Waiting for start");
+        telemetry.update();
+
         armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setTargetPosition(0);
@@ -34,6 +64,7 @@ public class AutonomousFramework extends LinearOpMode {
 
         clawServo = hardwareMap.servo.get("clawServo");
         clawServo.setPosition(CLAW_CLOSE_POS);
+
 
         waitForStart();
 
@@ -55,12 +86,6 @@ public class AutonomousFramework extends LinearOpMode {
                     break;
 
                 case 3: // Detect number of rings, determine A, B, C
-                    /*
-                    if 0 rings: A = true
-                    if 1 ring: B = true
-                    if 4 rings: nothing happens
-                    */
-                    break;
 
                 case 4: // Straighten robot
                     if (B) {
@@ -112,6 +137,17 @@ public class AutonomousFramework extends LinearOpMode {
                     break;
 
             }
+
+            telemetry.addData("Cb Value", pipeline.getAnalysis());
+            telemetry.addData("Ring Position", pipeline.position);
+            telemetry.addData("Frame Count", webcam.getFrameCount());
+            telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
+            telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
+            telemetry.addData("Pipeline time ms", webcam.getPipelineTimeMs());
+            telemetry.addData("Overhead time ms", webcam.getOverheadTimeMs());
+            telemetry.addData("Theoretical max FPS", webcam.getCurrentPipelineMaxFps());
+            telemetry.update();
+
         }
     }
 
