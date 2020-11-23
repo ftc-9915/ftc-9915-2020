@@ -7,6 +7,11 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+
+
 @Autonomous(name = "AutonomousFramework", group = "test")
 public class AutonomousFramework extends LinearOpMode {
 
@@ -17,8 +22,22 @@ public class AutonomousFramework extends LinearOpMode {
 
 
 
+    DcMotor armMotor; // this stuff is going to be replaced by robot class later
+
+    DcMotor leftFront;
+    DcMotor leftBack;
+    DcMotor rightFront;
+    DcMotor rightBack;
+
+    Servo clawServo;
+
+    static final int ARM_INCREMENT = 3;
+    static final double CLAW_OPEN_POS = 0.7;
+    static final double CLAW_CLOSE_POS = 0.15;
+
     @Override
     public void runOpMode() throws InterruptedException {
+
         //Initialize webcam
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -38,11 +57,29 @@ public class AutonomousFramework extends LinearOpMode {
         telemetry.addLine("Waiting for start");
         telemetry.update();
 
+        armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setTargetPosition(0);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        clawServo = hardwareMap.servo.get("clawServo");
+        clawServo.setPosition(CLAW_CLOSE_POS);
+
+
         waitForStart();
 
         while (opModeIsActive()) {
             switch (state) {
                 case 1: // Grab wobble goal
+                    /*
+                    clawServo.setPosition(CLAW_OPEN_POS);
+                    armMotor.setTargetPosition(-500); i totally didn't forget how to write autonomous code
+                    armMotor.setPower(1.0);
+                    clawServo.setPosition(CLAW_CLOSE_POS);
+                    armMotor.setTargetPosition(0);
+                    armMotor.setPower(1.0);
+                    goToNextState();
+                     */
                     break;
 
                 case 2: // Drive forward to rings
@@ -62,7 +99,7 @@ public class AutonomousFramework extends LinearOpMode {
                     break;
 
                 case 6: // Path B: Go forward 12 inches
-                    goToState(11); // drop wobble goal
+                    goToState(11); // this is the drop wobble goal state
                     break;
 
                 case 7: // Path A/C: Strafe towards wall
@@ -74,7 +111,7 @@ public class AutonomousFramework extends LinearOpMode {
                 break;
 
                 case 8: // Path A: Go straight forward until 2 lines have been detected
-                    goToState(11); // drop wobble goal
+                    goToState(11); // this is the drop wobble goal state
                     break;
 
                 case 9: // Path C: Go straight forward until 4 lines have been detected
@@ -84,6 +121,7 @@ public class AutonomousFramework extends LinearOpMode {
                     break;
 
                 case 11: // Release wobble goal
+                    // clawServo.setPosition(CLAW_OPEN_POS);
                     break;
 
                 case 12: // Back up behind white line
