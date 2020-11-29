@@ -30,6 +30,7 @@ import static org.opencv.core.CvType.CV_64FC1;
 
 public class VisionPipelineDynamic extends OpenCvPipeline {
 
+
     /**
      * An enum to define the ring position
      */
@@ -47,36 +48,46 @@ public class VisionPipelineDynamic extends OpenCvPipeline {
     public static final double SENSOR_WIDTH_MM = 3.8;
 
     //FOUR_RING Threshhold Constants
-    private static final int FOUR_RING_CB_AVERAGE = 157;
-    private static final int FOUR_RING_ASPECT_RATIO = 43/39;
+    public static final int FOUR_RING_CB_AVERAGE = 157;
+    public static final int FOUR_RING_ASPECT_RATIO = 43/39;
 
     //ONE_RING Threshhold Constants
-    private static final int ONE_RING_CB_AVERAGE = 146;
-    private static final double ONE_RING_ASPECT_RATIO = 43/21;
+    public static final int ONE_RING_CB_AVERAGE = 146;
+    public static final double ONE_RING_ASPECT_RATIO = 43/21;
 
     //Largest amount of error between highest ring confidence value before defaulting to the NO RING Configuration
-    private static final double HESITANCE_THRESHOLD = 0.2;
+    public static final double HESITANCE_THRESHOLD = 0.2;
 
     //Weights of each criteria for calculating confidence value
     public static final double DIMENSION_WEIGHT = 1;
     public static final double COLOR_WEIGHT = 1;
 
     //Mask constants to isolate orange coloured subjects
-    private Scalar lowerOrange = new Scalar(0.0, 141.0, 0.0);
-    private Scalar upperOrange = new Scalar(255.0, 230.0, 95.0);
+    public Scalar lowerOrange = new Scalar(0.0, 141.0, 0.0);
+    public Scalar upperOrange = new Scalar(255.0, 230.0, 95.0);
 
     //working variables
-    private Mat YcrCbFrame = new Mat();
-    private Mat MaskFrame = new Mat();
-    private Mat ContourFrame = new Mat();
-    private Mat RingAnalysisZone = new Mat();
-    private Mat CbFrame = new Mat();
+    public Mat YcrCbFrame = new Mat();
+    public Mat MaskFrame = new Mat();
+    public Mat ContourFrame = new Mat();
+    public Mat RingAnalysisZone = new Mat();
+    public Mat CbFrame = new Mat();
 
-    private Rect maxRect;
-    private int avgCbValue;
+    public Rect maxRect = new Rect();
+    public int avgCbValue = 0;
 
     public volatile RingPosition position;
     public volatile double distanceToRing;
+
+    public double oneRingCbError = 0;
+    public double oneRingDimensionError;
+    public double oneRingConfidence;
+
+    public double fourRingCbError;
+    public double fourRingDimensionError;
+    public double fourRingConfidence;
+
+    public double hesitance;
 
 
 
@@ -129,30 +140,24 @@ public class VisionPipelineDynamic extends OpenCvPipeline {
         avgCbValue = (int) Core.mean(RingAnalysisZone).val[0];
 
         //compute four ring error and one ring confidence
-        double fourRingCbError = (double) Math.abs(FOUR_RING_CB_AVERAGE - avgCbValue) / FOUR_RING_CB_AVERAGE;
-        double fourRingDimensionError = Math.abs(FOUR_RING_ASPECT_RATIO  - ((double) maxRect.width / maxRect.height));
-        double fourRingConfidence = 1 - ((fourRingCbError * COLOR_WEIGHT) + (fourRingDimensionError * DIMENSION_WEIGHT));
-
-        telemetry.addData( "fourRingCbError",  fourRingCbError );
-        telemetry.addData( "fourRingDimensionError",  fourRingDimensionError );
-        telemetry.addData( "fourRingConfidence",  fourRingConfidence );
+        fourRingCbError = (double) Math.abs(FOUR_RING_CB_AVERAGE - avgCbValue) / FOUR_RING_CB_AVERAGE;
+        fourRingDimensionError = Math.abs(FOUR_RING_ASPECT_RATIO  - ((double) maxRect.width / maxRect.height));
+        fourRingConfidence = 1 - ((fourRingCbError * COLOR_WEIGHT) + (fourRingDimensionError * DIMENSION_WEIGHT));
 
         //compute one ring error and one ring confidence
-        double oneRingCbError = (double) Math.abs(ONE_RING_CB_AVERAGE - avgCbValue) / ONE_RING_CB_AVERAGE;
-        double oneRingDimensionError = Math.abs(ONE_RING_ASPECT_RATIO  - ((double) maxRect.width / maxRect.height));
-        double oneRingConfidence = 1 - ((oneRingCbError * COLOR_WEIGHT) + (oneRingDimensionError * DIMENSION_WEIGHT));
+        oneRingCbError = (double) Math.abs(ONE_RING_CB_AVERAGE - avgCbValue) / ONE_RING_CB_AVERAGE;
+        oneRingDimensionError = Math.abs(ONE_RING_ASPECT_RATIO  - ((double) maxRect.width / maxRect.height));
+        oneRingConfidence = 1 - ((oneRingCbError * COLOR_WEIGHT) + (oneRingDimensionError * DIMENSION_WEIGHT));
 
-        telemetry.addData( "oneRingCbError",  oneRingCbError);
-        telemetry.addData( "oneRingDimensionError",  oneRingDimensionError );
-        telemetry.addData( "oneRingConfidence",  oneRingConfidence );
+
 
 
 
 
         //compute hesitance, difference between smallest ring confidence and 1
-        double hesitance = 1 - Math.max(oneRingConfidence, fourRingConfidence);
+         hesitance = 1 - Math.max(oneRingConfidence, fourRingConfidence);
 
-        telemetry.addData( "hesitance",  hesitance );
+//        telemetry.addData( "hesitance",  hesitance );
 
 
         //determine ring position based on confidence values
@@ -164,12 +169,21 @@ public class VisionPipelineDynamic extends OpenCvPipeline {
             position = RingPosition.FOUR;
         }
         distanceToRing = getDistanceToRing(maxRect);
-        telemetry.addData( "distanceToRing",  distanceToRing );
+//        telemetry.addData( "distanceToRing",  distanceToRing );
         //draw rectangle and report position
         Imgproc.rectangle(input, maxRect, new Scalar(0,255,0), 2);
         Imgproc.putText(input, String.valueOf(position) , new Point(maxRect.x, maxRect.y - 20), Imgproc.FONT_HERSHEY_PLAIN, 0.5, new Scalar(0,255,0), 1);
 
-        telemetry.update();
+
+//        telemetry.addData( "oneRingCbError",  oneRingCbError);
+//      telemetry.addData( "oneRingDimensionError",  oneRingDimensionError );
+//      telemetry.addData( "oneRingConfidence",  oneRingConfidence );
+//
+//        telemetry.addData( "fourRingCbError",  fourRingCbError );
+//        telemetry.addData( "fourRingDimensionError",  fourRingDimensionError );
+//        telemetry.addData( "fourRingConfidence",  fourRingConfidence );
+
+
         return input;
     }
 
@@ -181,6 +195,8 @@ public class VisionPipelineDynamic extends OpenCvPipeline {
         distance *= MM_TO_INCHES;
         return distance;
     }
+
+
 
 
 }
