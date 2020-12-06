@@ -30,12 +30,12 @@ public class VisionPipelineDynamicSearchAll extends OpenCvPipeline {
 
 
 
-    //Cb Threshhold Values
-    private static final int FOUR_RING_CB_AVERAGE = 157;
-    private static final int FOUR_RING_ASPECT_RATIO = 43/39;
+    //Cb Threshhold Values and Aspect Ratios (width/height)
+    private static final double FOUR_RING_CB_AVERAGE = 153.667;
+    private static final double FOUR_RING_ASPECT_RATIO = 1.117405583;
 
-    private static final int ONE_RING_CB_AVERAGE = 146;
-    private static final double ONE_RING_ASPECT_RATIO = 43/21;
+    private static final double ONE_RING_CB_AVERAGE = 148;
+    private static final double ONE_RING_ASPECT_RATIO = 1.878156566;
 
     private static final double ERROR_BEFORE_NO_RING = 0.2;
 
@@ -115,46 +115,6 @@ public class VisionPipelineDynamicSearchAll extends OpenCvPipeline {
         Imgproc.putText(input, String.valueOf(position) , new Point(ringAnalysisRect.x, ringAnalysisRect.y - 20), Imgproc.FONT_HERSHEY_PLAIN, 0.5, new Scalar(0,255,0), 1);
 
         return input;
-
-
-
-
-//        //compute four ring error and one ring confidence
-//        double fourRingCbError = (double) Math.abs(FOUR_RING_CB_AVERAGE - avgCbValue) / FOUR_RING_CB_AVERAGE;
-//        double fourRingDimensionError = Math.abs(FOUR_RING_ASPECT_RATIO  - ((double) maxRect.width / maxRect.height));
-//        double fourRingConfidence = 1 - ((fourRingCbError * COLOR_WEIGHT) + (fourRingDimensionError * DIMENSION_WEIGHT));
-//        telemetry.addData( "fourRingCbError",  fourRingCbError );
-//        telemetry.addData( "fourRingDimensionError",  fourRingDimensionError );
-//        telemetry.addData( "fourRingConfidence",  fourRingConfidence );
-//
-//        //compute one ring error and one ring confidence
-//        double oneRingCbError = (double) Math.abs(ONE_RING_CB_AVERAGE - avgCbValue) / ONE_RING_CB_AVERAGE;
-//        double oneRingDimensionError = Math.abs(ONE_RING_ASPECT_RATIO  - ((double) maxRect.width / maxRect.height));
-//        double oneRingConfidence = 1 - ((oneRingCbError * COLOR_WEIGHT) + (oneRingDimensionError * DIMENSION_WEIGHT));
-//        telemetry.addData( "oneRingCbError",  oneRingCbError);
-//        telemetry.addData( "oneRingDimensionError",  oneRingDimensionError );
-//        telemetry.addData( "oneRingConfidence",  oneRingConfidence );
-//
-//
-//
-//
-//        //compute no ring confidence, difference between smallest ring confidence and 1
-//        double noRingConfidence = 1 - Math.max(oneRingConfidence, fourRingConfidence);
-//        telemetry.addData( "noRingConfidence",  noRingConfidence );
-//        telemetry.update();
-//
-//        if (noRingConfidence > ERROR_BEFORE_NO_RING){
-//            position = RingPosition.NONE;
-//        } else if (oneRingConfidence > fourRingConfidence){
-//            position = RingPosition.ONE;
-//        } else {
-//            position = RingPosition.FOUR;
-//        }
-//
-//
-//        Imgproc.rectangle(input, maxRect, new Scalar(0,255,0), 2);
-//        Imgproc.putText(input, String.valueOf(position) , new Point(maxRect.x, maxRect.y - 20), Imgproc.FONT_HERSHEY_PLAIN, 0.5, new Scalar(0,255,0), 1);
-
 
 
     }
