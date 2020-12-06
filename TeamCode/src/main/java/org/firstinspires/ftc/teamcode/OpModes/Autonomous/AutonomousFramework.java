@@ -3,6 +3,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.Vision.VisionPipelineDynamic;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -41,7 +42,7 @@ public class AutonomousFramework extends LinearOpMode {
         //Initialize webcam
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        VisionPipeline pipeline = new VisionPipeline();
+        VisionPipelineDynamic pipeline = new VisionPipelineDynamic();
         webcam.setPipeline(pipeline);
 
         //opens connection to camera asynchronously
@@ -57,13 +58,13 @@ public class AutonomousFramework extends LinearOpMode {
         telemetry.addLine("Waiting for start");
         telemetry.update();
 
-        armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setTargetPosition(0);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        clawServo = hardwareMap.servo.get("clawServo");
-        clawServo.setPosition(CLAW_CLOSE_POS);
+//        armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
+//        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        armMotor.setTargetPosition(0);
+//        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//
+//        clawServo = hardwareMap.servo.get("clawServo");
+//        clawServo.setPosition(CLAW_CLOSE_POS);
 
 
         waitForStart();
@@ -138,7 +139,7 @@ public class AutonomousFramework extends LinearOpMode {
 
             }
 
-            telemetry.addData("Cb Value", pipeline.getAnalysis());
+            telemetry.addData("Rectangle X", pipeline.maxRect.width);
             telemetry.addData("Ring Position", pipeline.position);
             telemetry.addData("Frame Count", webcam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
