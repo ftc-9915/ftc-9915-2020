@@ -28,6 +28,13 @@ import java.util.ArrayList;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 import static org.opencv.core.CvType.CV_64FC1;
 
+
+/**
+ * Vision Pipeline that uses contours to draw a rectangle around the largest orange object and uses the aspect ratio of the rectangle and cb color channel values of the contents of the
+ * rectangle to determine confidence ratings for the one, four and none configuration, and determines the most likely ring configuration
+ *
+ */
+
 public class VisionPipelineDynamic extends OpenCvPipeline {
 
 
@@ -48,12 +55,12 @@ public class VisionPipelineDynamic extends OpenCvPipeline {
     public static final double SENSOR_WIDTH_MM = 3.8;
 
     //FOUR_RING Threshhold Constants
-    public static final int FOUR_RING_CB_AVERAGE = 157;
-    public static final int FOUR_RING_ASPECT_RATIO = 43/39;
+    private static final double FOUR_RING_CB_AVERAGE = 153.667;
+    private static final double FOUR_RING_ASPECT_RATIO = 1.117405583;
 
     //ONE_RING Threshhold Constants
-    public static final int ONE_RING_CB_AVERAGE = 146;
-    public static final double ONE_RING_ASPECT_RATIO = 43/21;
+    private static final double ONE_RING_CB_AVERAGE = 148;
+    private static final double ONE_RING_ASPECT_RATIO = 1.878156566;
 
     //Largest amount of error between highest ring confidence value before defaulting to the NO RING Configuration
     public static final double HESITANCE_THRESHOLD = 0.2;
@@ -66,28 +73,32 @@ public class VisionPipelineDynamic extends OpenCvPipeline {
     public Scalar lowerOrange = new Scalar(0.0, 141.0, 0.0);
     public Scalar upperOrange = new Scalar(255.0, 230.0, 95.0);
 
-    //working variables
+    //working mat variables
     public Mat YcrCbFrame = new Mat();
     public Mat MaskFrame = new Mat();
     public Mat ContourFrame = new Mat();
     public Mat RingAnalysisZone = new Mat();
     public Mat CbFrame = new Mat();
 
-    public Rect maxRect = new Rect();
-    public int avgCbValue = 0;
-
-    public volatile RingPosition position;
-    public volatile double distanceToRing;
-
+    //one ring confidence
     public double oneRingCbError = 0;
     public double oneRingDimensionError;
     public double oneRingConfidence;
 
+    //four ring confidence
     public double fourRingCbError;
     public double fourRingDimensionError;
     public double fourRingConfidence;
 
+    //no ring confidence / hesitance
     public double hesitance;
+
+    //USEFUL VALUES TO BE ACCESSED FROM AUTONOMOUS
+    public Rect maxRect = new Rect();
+    public int avgCbValue = 0;
+    public volatile RingPosition position;
+    public volatile double distanceToRing;
+
 
 
 
@@ -168,32 +179,21 @@ public class VisionPipelineDynamic extends OpenCvPipeline {
         } else {
             position = RingPosition.FOUR;
         }
-        distanceToRing = getDistanceToRing(maxRect);
-//        telemetry.addData( "distanceToRing",  distanceToRing );
+
+        //calculate and set distance, place holder value of -1 if Ring Position is NONE
+        if(position == RingPosition.NONE){
+            distanceToRing = -1;
+        } else {
+            distanceToRing = 1/(0.000771 * maxRect.height) + 0.813229571984;
+        }
+
+
         //draw rectangle and report position
         Imgproc.rectangle(input, maxRect, new Scalar(0,255,0), 2);
         Imgproc.putText(input, String.valueOf(position) , new Point(maxRect.x, maxRect.y - 20), Imgproc.FONT_HERSHEY_PLAIN, 0.5, new Scalar(0,255,0), 1);
 
 
-//        telemetry.addData( "oneRingCbError",  oneRingCbError);
-//      telemetry.addData( "oneRingDimensionError",  oneRingDimensionError );
-//      telemetry.addData( "oneRingConfidence",  oneRingConfidence );
-//
-//        telemetry.addData( "fourRingCbError",  fourRingCbError );
-//        telemetry.addData( "fourRingDimensionError",  fourRingDimensionError );
-//        telemetry.addData( "fourRingConfidence",  fourRingConfidence );
-
-
         return input;
-    }
-
-    public double getDistanceToRing(Rect rect){
-        if(position == RingPosition.NONE) {
-            return -1;
-        }
-        double distance =(FOCAL_LENGTH_MM * REAL_RING_WIDTH_MM * IMAGE_WIDTH_PX ) / (rect.width * SENSOR_WIDTH_MM);
-        distance *= MM_TO_INCHES;
-        return distance;
     }
 
 

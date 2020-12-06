@@ -58,13 +58,13 @@ public class AutonomousFramework extends LinearOpMode {
         telemetry.addLine("Waiting for start");
         telemetry.update();
 
-//        armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
-//        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        armMotor.setTargetPosition(0);
-//        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//
-//        clawServo = hardwareMap.servo.get("clawServo");
-//        clawServo.setPosition(CLAW_CLOSE_POS);
+        armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setTargetPosition(0);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        clawServo = hardwareMap.servo.get("clawServo");
+        clawServo.setPosition(CLAW_CLOSE_POS);
 
 
         waitForStart();
@@ -139,14 +139,24 @@ public class AutonomousFramework extends LinearOpMode {
 
             }
 
-            telemetry.addData("Rectangle X", pipeline.maxRect.width);
+            telemetry.addData("Rectangle Width", pipeline.maxRect.width);
+            telemetry.addData("Rectangle Height", pipeline.maxRect.height);
+            telemetry.addData("Rectangle Cb Value", pipeline.avgCbValue);
+
+            telemetry.addData("Four cb error", pipeline.fourRingCbError);
+            telemetry.addData("Four dimension error", pipeline.fourRingDimensionError);
+            telemetry.addData("Four confidence value", pipeline.fourRingConfidence);
+
+            telemetry.addData("One cb error", pipeline.oneRingCbError);
+            telemetry.addData("One dimension error", pipeline.oneRingDimensionError);
+            telemetry.addData("One confidence value", pipeline.oneRingConfidence);
+
+            telemetry.addData("Hesitance", pipeline.hesitance);
             telemetry.addData("Ring Position", pipeline.position);
-            telemetry.addData("Frame Count", webcam.getFrameCount());
-            telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
-            telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
-            telemetry.addData("Pipeline time ms", webcam.getPipelineTimeMs());
-            telemetry.addData("Overhead time ms", webcam.getOverheadTimeMs());
-            telemetry.addData("Theoretical max FPS", webcam.getCurrentPipelineMaxFps());
+
+            telemetry.addData("Distance To Ring (inches)", pipeline.distanceToRing);
+
+
             telemetry.update();
 
         }

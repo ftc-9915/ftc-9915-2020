@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
+package org.firstinspires.ftc.teamcode.Vision;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -14,6 +14,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
 
 
 public class VisionPipelineDynamicSearchAll extends OpenCvPipeline {
@@ -42,7 +43,7 @@ public class VisionPipelineDynamicSearchAll extends OpenCvPipeline {
     public static final double DIMENSION_WEIGHT = 1;
     public static final double COLOR_WEIGHT = 1;
 
-
+    //definitions for upper and lower threshholds for orange mask in the YcrCb channel mode
     private Scalar lowerOrange = new Scalar(0.0, 141.0, 0.0);
     private Scalar upperOrange = new Scalar(255.0, 230.0, 95.0);
 
