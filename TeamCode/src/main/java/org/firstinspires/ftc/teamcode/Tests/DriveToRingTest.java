@@ -5,8 +5,16 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "Arm Test", group = "test")
-public class ArmTest extends OpMode {
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.Examples.SkystoneDeterminationExample;
+import org.firstinspires.ftc.teamcode.Vision.VisionPipelineDynamic;
+import org.opencv.core.Rect;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvInternalCamera;
+
+@TeleOp(name = "DriveToRingTest", group = "test")
+public class DriveToRingTest extends OpMode {
     DcMotor armMotor;
 
     DcMotor leftFront;
@@ -16,16 +24,13 @@ public class ArmTest extends OpMode {
 
     Servo clawServo;
 
-    static final int ARM_INCREMENT = 3;
-    static final double CLAW_OPEN_POS = 0.7;
-    static final double CLAW_CLOSE_POS = 0.15;
-
-    int currentArmPosition = 0;
-    double armMultiplier = 0.0;
 
     double speed = 0.0;
     double strafe = 0.0;
     double rotation = 0.0;
+
+    OpenCvCamera webcam;
+    VisionPipelineDynamic pipeline;
 
     @Override
     public void init() {
@@ -43,34 +48,18 @@ public class ArmTest extends OpMode {
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
 
-        // Claw Servo
-        clawServo = hardwareMap.servo.get("clawServo");
-        clawServo.setPosition(CLAW_CLOSE_POS);
+        // Vision
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        pipeline = new VisionPipelineDynamic();
+        webcam.setPipeline(pipeline);
+
+
     }
 
     @Override
     public void loop() {
-        telemetry.addLine("Controls:");
-        telemetry.addData("Open Claw","button A");
-        telemetry.addData("Close Claw", "button B");
-        telemetry.addData("Arm", "right trigger (forward), left trigger (backward)");
-        telemetry.addData("Arm Position", currentArmPosition);
 
-
-        // Claw
-        if(gamepad1.a) {
-            clawServo.setPosition(CLAW_OPEN_POS);
-        }
-        if(gamepad1.b) {
-            clawServo.setPosition(CLAW_CLOSE_POS);
-        }
-
-        // Arm
-        armMultiplier = gamepad1.left_trigger - gamepad1.right_trigger;
-
-        currentArmPosition += ARM_INCREMENT * armMultiplier;
-        armMotor.setTargetPosition(currentArmPosition);
-        armMotor.setPower(1.0);
 
         // Chassis
         speed = -gamepad1.right_stick_y;
@@ -82,5 +71,42 @@ public class ArmTest extends OpMode {
         rightBack.setPower(speed + strafe - rotation);
         rightFront.setPower(speed - strafe - rotation);
 
+        if(gamepad1.dpad_up){
+            driveToRing();
+        }
+
+    }
+
+    public void driveToRing(){
+        if (pipeline.position == VisionPipelineDynamic.RingPosition.NONE){
+            telemetry.addLine("Didn't find ring");
+        } else {
+            rotateToRing();
+            moveForwardToRing();
+        }
+    }
+
+    public void rotateToRing(){
+        //turn robot until ring is within 30 pixels of horizontal center (180px)
+        while(pipeline.maxRect.x < 150 ||  pipeline.maxRect.x >  210){
+            //ring to the left of center, so turn right
+            if(pipeline.maxRect.x < 150){
+                leftBack.setPower(0.2);
+                leftFront.setPower(0.2);
+                rightFront.setPower(-0.2);
+                rightBack.setPower(-0.2);
+            }
+            //ring to the right of center, so turn left
+            else {
+                leftBack.setPower(-0.2);
+                leftFront.setPower(-0.2);
+                rightFront.setPower(0.2);
+                rightBack.setPower(0.2);
+            }
+        }
+    }
+    public void moveForwardToRing(){
+        double distance =  pipeline.distanceToRing;
+        //TODO: Implement move forward after Robot.java methods for distance are done
     }
 }
