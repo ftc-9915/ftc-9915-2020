@@ -58,13 +58,13 @@ public class AutonomousFramework extends LinearOpMode {
         telemetry.addLine("Waiting for start");
         telemetry.update();
 
-        armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setTargetPosition(0);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        clawServo = hardwareMap.servo.get("clawServo");
-        clawServo.setPosition(CLAW_CLOSE_POS);
+//        armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
+//        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        armMotor.setTargetPosition(0);
+//        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//
+//        clawServo = hardwareMap.servo.get("clawServo");
+//        clawServo.setPosition(CLAW_CLOSE_POS);
 
 
         waitForStart();
