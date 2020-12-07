@@ -3,13 +3,19 @@ package org.firstinspires.ftc.teamcode.Tests;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name="Launcher Test", group="test")
 public class LauncherTest extends OpMode {
 
     DcMotor launcherMotor;
+    Servo feederServo;
+
+    // TODO: test these and edit with accurate values
+    static final double SERVO_RESET_POS = 1.0;
+    static final double SERVO_PUSH_POS = 0.0;
+
     double power;
     // Amount of adjustment to be made to the motor power
     double increment;
@@ -23,6 +29,9 @@ public class LauncherTest extends OpMode {
         launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
         // Make the motor's speed constant using encoders
         launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        feederServo = hardwareMap.servo.get("feederServo");
+        feederServo.setPosition(SERVO_RESET_POS);
 
         // Initialization values
         power = 0.0;
@@ -39,6 +48,8 @@ public class LauncherTest extends OpMode {
         telemetry.addData("Motor Direction", direction);
         telemetry.addLine();
         telemetry.addLine("--- Controls ---");
+        telemetry.addData("Push Ring With Servo)", "button X");
+        telemetry.addData("Reset Servo", "button Y");
         telemetry.addData("Reverse Motor Direction", "D-pad left");
         telemetry.addLine(" - Motor Power -");
         telemetry.addData("Set Motor Power to Full Power (1.0)", "button A");
@@ -48,6 +59,15 @@ public class LauncherTest extends OpMode {
         telemetry.addLine("- Power Increment -");
         telemetry.addData("Increase Increment by 0.01", "Right Bumper");
         telemetry.addData("Decrease Increment by 0.01", "Left Bumper");
+
+        // Servo controls
+        if(gamepad1.x) {
+            feederServo.setPosition(SERVO_PUSH_POS);
+        }
+        if(gamepad1.y) {
+            feederServo.setPosition(SERVO_RESET_POS);
+        }
+
 
         // Reverse motor direction (each time the button is pressed)
         if(gamepad1.dpad_left && buttonReleased) {
