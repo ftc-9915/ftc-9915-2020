@@ -47,8 +47,8 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
 
     //Mask constants to isolate blue coloured subjects
-    public Scalar lowerHSV = new Scalar(90.64748201438849, 77.96762589928058, 158.22841726618702);
-    public Scalar upperHSV = new Scalar(112.42320819112628, 204.95733788395904, 246.29692832764508);
+    public Scalar lowerHSV = new Scalar(110, 0, 236);
+    public Scalar upperHSV = new Scalar(121, 36, 255);
 
     //working mat variables
     public Mat HSVFrame = new Mat();
@@ -103,9 +103,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
             contour.release(); // releasing the buffer of the contour, since after use, it is no longer needed
             convertedContour.release(); // releasing the buffer of the copy of the contour, since after use, it is no longer needed
         }
-
-        Imgproc.rectangle(input, maxRect, new Scalar(0,0,255), 2);
-
+        
 
         //draw rectangle and report position
         Imgproc.rectangle(input, maxRect, new Scalar(0,255,0), 2);

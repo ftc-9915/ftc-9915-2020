@@ -60,7 +60,6 @@ public class DriveToRingTest extends OpMode {
     @Override
     public void loop() {
 
-
         // Chassis
         speed = -gamepad1.right_stick_y;
         strafe = gamepad1.right_stick_x;
@@ -71,7 +70,7 @@ public class DriveToRingTest extends OpMode {
         rightBack.setPower(speed + strafe - rotation);
         rightFront.setPower(speed - strafe - rotation);
 
-        if(gamepad1.dpad_up){
+        if(gamepad1.dpad_up) {
             driveToRing();
         }
 
