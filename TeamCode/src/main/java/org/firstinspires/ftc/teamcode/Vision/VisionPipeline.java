@@ -116,10 +116,6 @@ public class VisionPipeline extends OpenCvPipeline {
         return input;
     }
 
-    public int getAnalysis(){
-        return avgCbValue;
-    }
-
     @Override
     public void onViewportTapped() {
         /*
@@ -128,5 +124,9 @@ public class VisionPipeline extends OpenCvPipeline {
 
         viewfinderIndex++;
     }
+    public int getAnalysis(){
+        return avgCbValue;
+    }
+
 
 }
