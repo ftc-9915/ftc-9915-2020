@@ -87,23 +87,26 @@ public class DriveToRingTest extends OpMode {
     }
 
     public void rotateToRing(){
-        //turn robot until ring is within 30 pixels of horizontal center (180px)
-        while(pipeline.maxRect.x < 150 ||  pipeline.maxRect.x >  210){
-            //ring to the left of center, so turn right
-            if(pipeline.maxRect.x < 150){
-                leftBack.setPower(0.2);
-                leftFront.setPower(0.2);
-                rightFront.setPower(-0.2);
-                rightBack.setPower(-0.2);
-            }
-            //ring to the right of center, so turn left
-            else {
-                leftBack.setPower(-0.2);
-                leftFront.setPower(-0.2);
-                rightFront.setPower(0.2);
-                rightBack.setPower(0.2);
-            }
+    //turn robot until ring is within 30 pixels of horizontal center (180px)
+        //ring to the left of center, so turn right
+        if(pipeline.maxRect.x < 150){
+            telemetry.addLine("Ring to the left");
+            leftBack.setPower(0.2);
+            leftFront.setPower(0.2);
+            rightFront.setPower(-0.2);
+            rightBack.setPower(-0.2);
         }
+        //ring to the right of center, so turn left
+        else if (pipeline.maxRect.x >  210){
+            telemetry.addLine("Ring to the right");
+            leftBack.setPower(-0.2);
+            leftFront.setPower(-0.2);
+            rightFront.setPower(0.2);
+            rightBack.setPower(0.2);
+        }
+
+        telemetry.update();
+
     }
     public void moveForwardToRing(){
         double distance =  pipeline.distanceToRing;

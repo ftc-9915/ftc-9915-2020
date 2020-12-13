@@ -54,16 +54,17 @@ public class VisionPipelineDynamic extends OpenCvPipeline {
     public static final double IMAGE_WIDTH_PX = 320;
     public static final double SENSOR_WIDTH_MM = 3.8;
 
-    //FOUR_RING Threshhold Constants
-    private static final double FOUR_RING_CB_AVERAGE = 153.667;
-    private static final double FOUR_RING_ASPECT_RATIO = 1.117405583;
+    //FOUR RING TUNING CONSTANTS
+    private static final double FOUR_RING_CB_AVERAGE = 149.5;
+    private static final double FOUR_RING_ASPECT_RATIO = 1.0796318;
 
-    //ONE_RING Threshhold Constants
-    private static final double ONE_RING_CB_AVERAGE = 148;
-    private static final double ONE_RING_ASPECT_RATIO = 1.878156566;
+    //ONE RING TUNING CONSTANTS
+
+    private static final double ONE_RING_CB_AVERAGE = 143;
+    private static final double ONE_RING_ASPECT_RATIO = 1.59433062;
 
     //Largest amount of error between highest ring confidence value before defaulting to the NO RING Configuration
-    public static final double HESITANCE_THRESHOLD = 0.2;
+    public static final double HESITANCE_THRESHOLD = 0.24;
 
     //Weights of each criteria for calculating confidence value
     public static final double DIMENSION_WEIGHT = 1;
