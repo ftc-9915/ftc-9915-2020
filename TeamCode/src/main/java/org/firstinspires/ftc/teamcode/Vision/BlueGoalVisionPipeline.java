@@ -21,8 +21,7 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 
-
-
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -40,7 +39,7 @@ import java.util.ArrayList;
  * rectangle to determine confidence ratings for the one, four and none configuration, and determines the most likely ring configuration
  *
  */
-
+@Config
 public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
     public class Fraction {
@@ -87,13 +86,13 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
 
     //Mask constants to isolate blue coloured subjects
-    public static double lowerH = 105.6;
-    public static double lowerS = 77.96;
-    public static double lowerV = 158.22;
+    public static double lowerH = 106;
+    public static double lowerS = 78;
+    public static double lowerV = 135;
 
-    public static double upperH = 112.42;
-    public static double upperS = 204.95;
-    public static double upperV = 246.2969;
+    public static double upperH = 118;
+    public static double upperS = 255;
+    public static double upperV = 255;
 
     public Scalar lowerHSV = new Scalar(lowerH, lowerS, lowerV);
     public Scalar upperHSV = new Scalar(upperH, upperS, upperV);
@@ -107,7 +106,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     //USEFUL VALUES TO BE ACCESSED FROM AUTONOMOUS
     public Rect goalRect = new Rect();
 
-
+    public int viewfinderIndex = 0;
 
     @Override
     public void init(Mat firstFrame) {
@@ -175,8 +174,13 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         //draw Rect
         Imgproc.rectangle(input, goalRect, new Scalar(0,255,0), 2);
 
-
-        return input;
+        //Return MaskFrame for tuning purposes
+//        return MaskFrame;
+        if(viewfinderIndex % 2 == 0){
+            return input;
+        } else {
+            return MaskFrame;
+        }
     }
 
     //helper method to check if rect is found
@@ -202,9 +206,24 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
                 Math.atan((offsetCenterX - targetCenterX) / horizontalFocalLength));
     }
 
-    //TODO: Derive equation
     public double getGoalDistance(){
-        return 0.0;
+        double xDistance = getXDistance();
+        double yDistance = HIGH_GOAL_HEIGHT - CAMERA_HEIGHT;
+        double diagonalDistance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
+        return diagonalDistance;
+    }
+
+    public double getXDistance(){
+        return (5642.0/goalRect.width) - 0.281;
+    }
+
+    @Override
+    public void onViewportTapped() {
+        /*
+         * Changing the displayed color space on the viewport when the user taps it
+         */
+
+        viewfinderIndex++;
     }
 
 
