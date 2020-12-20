@@ -10,23 +10,29 @@ are then used to determine the most accurate Ring Position.
 
 package org.firstinspires.ftc.teamcode.Vision;
 
-import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-import java.util.ArrayList;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-import static org.opencv.core.CvType.CV_64FC1;
+
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+
+import java.util.ArrayList;
 
 
 /**
@@ -37,39 +43,101 @@ import static org.opencv.core.CvType.CV_64FC1;
 
 public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
+    public class Fraction {
+        private int numerator, denominator;
+        Fraction(long a, long b) {
+            numerator = (int) (a / gcd(a, b));
+            denominator = (int) (b / gcd(a, b));
+        }
+        /**
+         * @return the greatest common denominator
+         */
+        private long gcd(long a, long b) {
+            return b == 0 ? a : gcd(b, a % b);
+        }
+        public int getNumerator() {
+            return numerator;
+        }
+        public int getDenominator() {
+            return denominator;
+        }
+    }
+
+
+    //Pinhole Camera Variables
+    public static final double CAMERA_HEIGHT = 8.25; //camera height inches for distance calculation
+    public static final double HIGH_GOAL_HEIGHT = 35.875; //camera height inches for distance calculation
+
+    private int imageWidth;
+    private int imageHeight;
+
+    private double cameraPitchOffset;
+    private double cameraYawOffset;
+
+    private double fov;
+    private double imageArea;
+    private double offsetCenterX;
+    private double offsetCenterY;
+    private double horizontalFocalLength;
+    private double verticalFocalLength;
+
 
     //Boundary Line (Only detects above this to eliminate field tape)
     public static final int BOUNDARY = 160;
 
-    public static final double CAMERA_HEIGHT = 8.25; //camera height inches for distance calculation
-    public static final double HIGH_GOAL_HEIGHT = 35.875; //camera height inches for distance calculation
-    public static double distanceYToGoal = HIGH_GOAL_HEIGHT - CAMERA_HEIGHT;
-
 
     //Mask constants to isolate blue coloured subjects
-    public Scalar lowerHSV = new Scalar(110, 0, 236);
-    public Scalar upperHSV = new Scalar(121, 36, 255);
+    public static double lowerH = 105.6;
+    public static double lowerS = 77.96;
+    public static double lowerV = 158.22;
+
+    public static double upperH = 112.42;
+    public static double upperS = 204.95;
+    public static double upperV = 246.2969;
+
+    public Scalar lowerHSV = new Scalar(lowerH, lowerS, lowerV);
+    public Scalar upperHSV = new Scalar(upperH, upperS, upperV);
 
     //working mat variables
     public Mat HSVFrame = new Mat();
     public Mat MaskFrame = new Mat();
     public Mat ContourFrame = new Mat();
-    public Mat RingAnalysisZone = new Mat();
-    public Mat CbFrame = new Mat();
 
 
     //USEFUL VALUES TO BE ACCESSED FROM AUTONOMOUS
-    public Rect maxRect = new Rect();
-    public volatile double distanceXToGoal;
-    public volatile double distanceToGoal;
+    public Rect goalRect = new Rect();
+
+
+
+    @Override
+    public void init(Mat firstFrame) {
+        imageWidth = firstFrame.width();
+        imageHeight = firstFrame.height();
+
+        imageArea = this.imageWidth * this.imageHeight;
+        offsetCenterX = ((double) this.imageWidth / 2) - 0.5;
+        offsetCenterY = ((double) this.imageHeight / 2) - 0.5;
+
+        // pinhole model calculations
+        double diagonalView = Math.toRadians(this.fov);
+        Fraction aspectFraction = new Fraction(this.imageWidth, this.imageHeight);
+        int horizontalRatio = aspectFraction.getNumerator();
+        int verticalRatio = aspectFraction.getDenominator();
+        double diagonalAspect = Math.hypot(horizontalRatio, verticalRatio);
+        double horizontalView = Math.atan(Math.tan(diagonalView / 2) * (horizontalRatio / diagonalAspect)) * 2;
+        double verticalView = Math.atan(Math.tan(diagonalView / 2) * (verticalRatio / diagonalAspect)) * 2;
+        horizontalFocalLength = this.imageWidth / (2 * Math.tan(horizontalView / 2));
+        verticalFocalLength = this.imageHeight / (2 * Math.tan(verticalView / 2));
+    }
+
 
 
     @Override
     public Mat processFrame(Mat input) {
 
 
-        //define maxWidth in method so it resets every cycle
-        int maxWidth = 0;
+        //define largestAreaRect in method so it resets every cycle
+        double largestAreaRect = 0;
 
         //Convert to HSV color space
         Imgproc.cvtColor(input, HSVFrame, Imgproc.COLOR_RGB2HSV);
@@ -94,29 +162,51 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
             //draw rectangle around contour
             Rect contourRect = Imgproc.boundingRect(convertedContour);
 
-            //find largest contour rectangle in list
-            if(contourRect.width > maxWidth && contourRect.y + contourRect.height < BOUNDARY){
-                maxWidth = contourRect.width;
-                maxRect = contourRect;
+            //find largest area contour rectangle in list that's above boundary line
+            if(contourRect.y + contourRect.height < BOUNDARY  &&
+                    contourRect.area() > largestAreaRect) {
+                largestAreaRect = contourRect.area();
+                goalRect = contourRect;
             }
 
             contour.release(); // releasing the buffer of the contour, since after use, it is no longer needed
             convertedContour.release(); // releasing the buffer of the copy of the contour, since after use, it is no longer needed
         }
-        
-
-        //draw rectangle and report position
-        Imgproc.rectangle(input, maxRect, new Scalar(0,255,0), 2);
-
-        //calculate and set x distance in inches using calibration curve
-        distanceXToGoal = 1/(0.000771 * maxRect.height) + 0.813229571984;
-
-        //calculate distance using pythagorean theorem
-        distanceToGoal = Math.sqrt(Math.pow(distanceXToGoal, 2) + Math.pow(distanceYToGoal, 2));
+        //draw Rect
+        Imgproc.rectangle(input, goalRect, new Scalar(0,255,0), 2);
 
 
         return input;
     }
+
+    //helper method to check if rect is found
+    public boolean isGoalVisible(){
+        return goalRect != null;
+    }
+
+    public double getGoalPitch() {
+        if(goalRect == null){
+            return -1;
+        }
+        double targetCenterY = goalRect.y + goalRect.height / 2;
+        return -Math.toDegrees(
+                Math.atan((offsetCenterY - targetCenterY) / verticalFocalLength));
+    }
+    public double getGoalYaw() {
+        if(goalRect == null){
+            return -1;
+        }
+
+        double targetCenterX = goalRect.x + goalRect.width / 2;
+        return Math.toDegrees(
+                Math.atan((offsetCenterX - targetCenterX) / horizontalFocalLength));
+    }
+
+    //TODO: Derive equation
+    public double getGoalDistance(){
+        return 0.0;
+    }
+
 
 
 

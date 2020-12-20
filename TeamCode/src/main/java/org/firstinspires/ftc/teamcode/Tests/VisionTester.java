@@ -2,12 +2,9 @@ package org.firstinspires.ftc.teamcode.Tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
-import org.firstinspires.ftc.teamcode.Vision.VisionPipelineDynamic;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -46,8 +43,11 @@ public class VisionTester extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            telemetry.addData("Rectangle Width", pipeline.maxRect.width);
-            telemetry.addData("Rectangle Height", pipeline.maxRect.height);
+            telemetry.addData("Rectangle Width", pipeline.goalRect.width);
+            telemetry.addData("Rectangle Height", pipeline.goalRect.height);
+            telemetry.addData("Pitch", pipeline.getGoalPitch());
+            telemetry.addData("Yaw", pipeline.getGoalYaw());
+
             telemetry.update();
 
         }
