@@ -4,12 +4,22 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name="Launcher Test", group="test")
 public class LauncherTest extends OpMode {
 
     DcMotor launcherMotor;
+
+    DcMotor collectorMotor;
+
+    Servo liftServo;
+    Servo pushServo;
+
+    ElapsedTime timer = new ElapsedTime();
     Servo feederServo;
 
     // TODO: test these and edit with accurate values
@@ -24,11 +34,24 @@ public class LauncherTest extends OpMode {
 
     int direction = 1;
 
+    static final double COLLECTOR_MOTOR_POWER = 1.0;
+    static final double LIFT_UP_POS = 0.32;
+    static final double LIFT_DOWN_POS = 0.28;
+    static final double NOT_PUSH_POS = 0.68;
+    static final double PUSH_POS = 0.52;
+
+    boolean collectorPush;
+
     @Override
     public void init() {
         launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
         // Make the motor's speed constant using encoders
         launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        collectorMotor = hardwareMap.dcMotor.get("collectorMotor");
+        launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        liftServo = hardwareMap.servo.get("liftServo");
+        pushServo = hardwareMap.servo.get("pushServo");
 
         feederServo = hardwareMap.servo.get("feederServo");
         feederServo.setPosition(SERVO_RESET_POS);
@@ -38,6 +61,12 @@ public class LauncherTest extends OpMode {
         increment = 0.01;
         buttonReleased = true;
         direction = 1;
+        collectorPush = false;
+
+        // Starting position
+        liftServo.setPosition(LIFT_DOWN_POS);
+        pushServo.setPosition(NOT_PUSH_POS);
+
     }
 
     @Override
@@ -51,6 +80,9 @@ public class LauncherTest extends OpMode {
         telemetry.addData("Push Ring With Servo)", "button X");
         telemetry.addData("Reset Servo", "button Y");
         telemetry.addData("Reverse Motor Direction", "D-pad left");
+        telemetry.addData("Lower collector platform", "button X");
+        telemetry.addData("Lift collector platform", "button Y");
+        telemetry.addData("Push/retract collector servo", "D-pad right");
         telemetry.addLine(" - Motor Power -");
         telemetry.addData("Set Motor Power to Full Power (1.0)", "button A");
         telemetry.addData("Stop Motor (power 0.0)", "button B");
@@ -60,12 +92,27 @@ public class LauncherTest extends OpMode {
         telemetry.addData("Increase Increment by 0.01", "Right Bumper");
         telemetry.addData("Decrease Increment by 0.01", "Left Bumper");
 
-        // Servo controls
-        if(gamepad1.x) {
-            feederServo.setPosition(SERVO_PUSH_POS);
+        // Lifts/Lowers the collecting platform
+        if (gamepad1.y) {
+            liftServo.setPosition(LIFT_UP_POS);
         }
-        if(gamepad1.y) {
-            feederServo.setPosition(SERVO_RESET_POS);
+
+        if (gamepad1.x) {
+            liftServo.setPosition(LIFT_DOWN_POS);
+        }
+
+
+        // Pushes the stack then returns to original position
+        if (gamepad1.dpad_right && buttonReleased) {
+            pushServo.setPosition(PUSH_POS);
+            collectorPush = true;
+            timer.reset();
+            buttonReleased = false;
+        }
+
+        if (collectorPush && timer.seconds() > 1) {
+            pushServo.setPosition(NOT_PUSH_POS);
+            collectorPush = false;
         }
 
 
@@ -105,11 +152,12 @@ public class LauncherTest extends OpMode {
 
         // Do not adjust values again until after buttons are released (and pressed again) so the
         // adjustments are made each time the gamepad buttons are pressed rather than each time through loop
-        if(!gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_left) {
+        if(!gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_left && !gamepad1.dpad_right) {
             buttonReleased = true;
         }
 
         launcherMotor.setPower(power * direction);
+        collectorMotor.setPower(COLLECTOR_MOTOR_POWER);
 
     }
 }
