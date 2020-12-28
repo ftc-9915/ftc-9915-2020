@@ -88,6 +88,8 @@ public class SampleMecanumDrive extends MecanumDrive {
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
 
+    DcMotor armMotor;
+
     private VoltageSensor batteryVoltageSensor;
 
     private Pose2d lastPoseOnTurn;
@@ -129,9 +131,16 @@ public class SampleMecanumDrive extends MecanumDrive {
         // upward (normal to the floor) using a command like the following:
         // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
 
+        // Initialize the arm in the position you want it to stay (though the arm is likely to fall back anyway)
+        armMotor = hardwareMap.dcMotor.get("armMotor");
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setTargetPosition(0);
+        armMotor.setPower(1.0);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
-        rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
+        leftRear = hardwareMap.get(DcMotorEx.class, "leftBack");
+        rightRear = hardwareMap.get(DcMotorEx.class, "rightBack");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
