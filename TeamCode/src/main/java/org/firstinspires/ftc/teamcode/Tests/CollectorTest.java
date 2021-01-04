@@ -26,7 +26,8 @@ public class CollectorTest extends OpMode {
     boolean collectorPush;
 
     // Ensures that the adjustments are made each time the gamepad buttons are pressed rather than each time through loop
-    boolean buttonReleased;
+    boolean buttonReleased1;
+    boolean buttonReleased2;
 
     static final double LIFT_UP_POS = 0.32;
     static final double LIFT_DOWN_POS = 0.28;
@@ -50,7 +51,8 @@ public class CollectorTest extends OpMode {
         launcherPower = 0.0;
         collectorPower = 1.0;
         collectorPush = false;
-        buttonReleased = true;
+        buttonReleased1 = true;
+        buttonReleased2 = true;
 
         // Starting position
         liftServo.setPosition(LIFT_DOWN_POS);
@@ -74,25 +76,28 @@ public class CollectorTest extends OpMode {
         // Placeholder for chassis code
 
         // Turns collector on/off
-        if (gamepad1.a) {
+        if (gamepad1.a && buttonReleased1) {
             collectorPower = 1.0;
+            buttonReleased1 = false;
         }
 
-        if (gamepad1.b) {
+        if (gamepad1.b && buttonReleased1) {
             collectorPower = 0.0;
+            buttonReleased1 = false;
         }
 
         // Turns launcher on/off
-        if (gamepad2.x) {
+        if (gamepad2.x && buttonReleased2) {
             if (launcherPower == 0.0) {
                 launcherPower = -1.0;
             } else {
                 launcherPower = 0.0;
             }
+            buttonReleased2 = false;
         }
 
         // Pushes/retracts collector servo
-        if (gamepad2.y) {
+        if (gamepad2.y && buttonReleased2) {
             if (collectorPush) {
                 pushServo.setPosition(NOT_PUSH_POS);
                 collectorPush = false;
@@ -100,24 +105,29 @@ public class CollectorTest extends OpMode {
                 pushServo.setPosition(PUSH_POS);
                 collectorPush = true;
             }
+            buttonReleased2 = false;
         }
 
         // Lifts/Lowers the collecting platform
-        if (gamepad2.left_bumper && buttonReleased) {
+        if (gamepad2.left_bumper && buttonReleased2) {
             liftServo.setPosition(LIFT_DOWN_POS);
-            buttonReleased = false;
+            buttonReleased2 = false;
         }
 
-        if (gamepad2.right_bumper && buttonReleased) {
+        if (gamepad2.right_bumper && buttonReleased2) {
             liftServo.setPosition(LIFT_UP_POS);
-            buttonReleased = false;
+            buttonReleased2 = false;
         }
 
 
         // Do not adjust values again until after buttons are released (and pressed again) so the
         // adjustments are made each time the gamepad buttons are pressed rather than each time through loop
-        if(!gamepad2.left_bumper && !gamepad2.right_bumper) {
-            buttonReleased = true;
+        if (!gamepad1.a && !gamepad1.b) {
+            buttonReleased1 = true;
+        }
+
+        if(!gamepad2.left_bumper && !gamepad2.right_bumper && !gamepad2.x && !gamepad2.y) {
+            buttonReleased2 = true;
         }
 
         launcherMotor.setPower(launcherPower);
