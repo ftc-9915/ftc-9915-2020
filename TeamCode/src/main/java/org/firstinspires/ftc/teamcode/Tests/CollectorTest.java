@@ -29,8 +29,8 @@ public class CollectorTest extends OpMode {
     boolean buttonReleased1;
     boolean buttonReleased2;
 
-    static final double LIFT_UP_POS = 0.32;
-    static final double LIFT_DOWN_POS = 0.28;
+    static final double LIFT_UP_POS = 0.34 ;
+    static final double LIFT_DOWN_POS = 0.25;
     static final double NOT_PUSH_POS = 0.68;
     static final double PUSH_POS = 0.52;
 
@@ -66,6 +66,7 @@ public class CollectorTest extends OpMode {
         telemetry.addLine("--- Controls (Gamepad 1) ---");
         telemetry.addData("Turn collector on", "Button A");
         telemetry.addData("Turn collector off", "Button B");
+        telemetry.addData("Reverse collector direction", "Button X");
         telemetry.addLine();
         telemetry.addLine("--- Controls (Gamepad 2) ---");
         telemetry.addData("Turn launcher on/off", "Button X");
@@ -83,6 +84,11 @@ public class CollectorTest extends OpMode {
 
         if (gamepad1.b && buttonReleased1) {
             collectorPower = 0.0;
+            buttonReleased1 = false;
+        }
+
+        if (gamepad1.x && buttonReleased1) {
+            collectorPower *= -1;
             buttonReleased1 = false;
         }
 
@@ -122,7 +128,7 @@ public class CollectorTest extends OpMode {
 
         // Do not adjust values again until after buttons are released (and pressed again) so the
         // adjustments are made each time the gamepad buttons are pressed rather than each time through loop
-        if (!gamepad1.a && !gamepad1.b) {
+        if (!gamepad1.a && !gamepad1.b && !gamepad1.x) {
             buttonReleased1 = true;
         }
 
