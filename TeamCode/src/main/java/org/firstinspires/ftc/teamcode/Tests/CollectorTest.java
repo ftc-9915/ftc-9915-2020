@@ -7,6 +7,13 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name="Collector Test", group="test")
 public class CollectorTest extends OpMode {
+/*
+    DcMotor leftFront;
+    DcMotor leftBack;
+    DcMotor rightFront;
+    DcMotor rightBack;
+
+ */
 
     DcMotor launcherMotor;
 
@@ -29,13 +36,28 @@ public class CollectorTest extends OpMode {
     boolean buttonReleased1;
     boolean buttonReleased2;
 
-    static final double LIFT_UP_POS = 0.34 ;
-    static final double LIFT_DOWN_POS = 0.25;
+    static final double LIFT_UP_POS = 0.49 ;
+    static final double LIFT_DOWN_POS = 0.75;
     static final double NOT_PUSH_POS = 0.68;
     static final double PUSH_POS = 0.52;
 
+    double speed = 0.0;
+    double strafe = 0.0;
+    double rotation = 0.0;
+
     @Override
     public void init() {
+        // Chassis Motors
+        /*
+        leftFront = hardwareMap.dcMotor.get("leftFront");
+        leftBack = hardwareMap.dcMotor.get("leftBack");
+        rightFront = hardwareMap.dcMotor.get("rightFront");
+        rightBack = hardwareMap.dcMotor.get("rightBack");
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        */
+
+        // Attachment Motors
         launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
         launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         collectorMotor = hardwareMap.dcMotor.get("collectorMotor");
@@ -74,7 +96,18 @@ public class CollectorTest extends OpMode {
         telemetry.addData("Lower collector platform", "Left Bumper");
         telemetry.addData("Lift collector platform", "Right Bumper");
 
-        // Placeholder for chassis code
+        // Chassis code
+        speed = -gamepad1.right_stick_y;
+        strafe = gamepad1.right_stick_x;
+        rotation = gamepad1.left_stick_x;
+
+        /*
+        leftFront.setPower(speed + strafe + rotation);
+        leftBack.setPower(speed - strafe + rotation);
+        rightBack.setPower(speed + strafe - rotation);
+        rightFront.setPower(speed - strafe - rotation);
+
+         */
 
         // Turns collector on/off
         if (gamepad1.a && buttonReleased1) {
